@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    /* === Basic Settings === */
+    "target": "ESNext", // Modern JS output
+    "module": "CommonJS", // Required for Node.js
+    "lib": ["ESNext", "DOM"], // Include latest JS & browser types
+    "moduleResolution": "node", // Node-style module resolution
+    "esModuleInterop": true, // Allow default imports from CJS modules
+    "allowSyntheticDefaultImports": true, // For flexibility with imports
+    "resolveJsonModule": true, // Allow importing JSON files
+    "types": ["node", "@playwright/test"], // Playwright + Node types available globally
+
+    /* === Strictness === */
+    "strict": true, // Enable all strict type-checking
+    "noImplicitAny": true, // Force explicit typing
+    "strictNullChecks": true, // Catch null/undefined errors
+    "forceConsistentCasingInFileNames": true, // Avoid casing mismatches
+
+    /* === Output & Paths === */
+    "outDir": "dist", // Compiled output folder
+    "rootDir": ".", // Start compilation from project root
+    "baseUrl": ".", // Base path for module imports
+    "paths": {
+      // Aliases for cleaner imports
+      "@config/*": ["src/config/*"],
+      "@fixtures/*": ["src/fixtures/*"],
+      "@pages/*": ["src/pageObjects/*"],
+      "@types/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"],
+      "@testData/*": ["src/testData/*"]
+    },
+
+    /* === Emit Settings === */
+    "skipLibCheck": true, // Speeds up compilation
+    "noEmitOnError": true, // Don’t emit if there are errors
+    "noEmit": true // Playwright runs TS directly via ts-node
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist", "reports"]
+}
