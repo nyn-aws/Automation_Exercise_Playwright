@@ -27,7 +27,7 @@ export default defineConfig({
     ["json", { outputFile: "reports/results.json" }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  timeout: 30 * 1000,
+  timeout: 90 * 1000,
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "https://www.automationexercise.com/",

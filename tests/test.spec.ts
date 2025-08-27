@@ -1,9 +1,6 @@
-import { test, expect, Locator } from "@playwright/test";
-import {
-  Homepage,
-  DateSelection,
-  RegistrationFormData,
-} from "../src/pages/homepage";
+import { test, expect } from "@playwright/test";
+import { PageObjectManager } from "../src/pages/PageObjectManager";
+import { DateSelection, RegistrationFormData } from "../src/pages/authPage";
 import { CommonUtils } from "../src/utils/commonUtils";
 
 //  Variables
@@ -32,12 +29,23 @@ const registrationFormData: RegistrationFormData = {
 
 // Testcases
 test.describe("Automation Exercise", () => {
-  let homepage: Homepage;
+  let pageObjectManager: PageObjectManager;
   let email_value: string;
+  let homepage: ReturnType<PageObjectManager["getHomePage"]>;
+  let authPage: ReturnType<PageObjectManager["getAuthPage"]>;
+  let productsPage: ReturnType<PageObjectManager["getProductsPage"]>;
+  let cartPage: ReturnType<PageObjectManager["getCartPage"]>;
+  let checkoutPage: ReturnType<PageObjectManager["getCheckoutPage"]>;
 
   test.beforeEach(async ({ page }, testInfo) => {
     console.log(`Starting test: ${testInfo.title}`);
-    homepage = new Homepage(page);
+    pageObjectManager = new PageObjectManager(page);
+    homepage = pageObjectManager.getHomePage();
+    authPage = pageObjectManager.getAuthPage();
+    productsPage = pageObjectManager.getProductsPage();
+    cartPage = pageObjectManager.getCartPage();
+    checkoutPage = pageObjectManager.getCheckoutPage();
+
     await homepage.goto();
     // Page Title and URL assertions
     await expect(page).toHaveURL("https://www.automationexercise.com/");
@@ -56,54 +64,54 @@ test.describe("Automation Exercise", () => {
   test("Test Case 1: Register User", async ({ page }) => {
     test.slow();
 
-    await homepage.navigateToSignup();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await expect(homepage.locators.new_user_sign_up).toBeVisible();
-    await homepage.input_signup_details(name_value, email_value);
+    await authPage.navigateToSignup();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await expect(authPage.locators.new_user_sign_up).toBeVisible();
+    await authPage.input_signup_details(name_value, email_value);
 
     // Assertions for Enter Account Information page
     await expect
-      .soft(homepage.locators.enter_account_info_heading)
+      .soft(authPage.locators.enter_account_info_heading)
       .toBeVisible();
-    await expect(homepage.locators.registration_form_name).toHaveValue(
+    await expect(authPage.locators.registration_form_name).toHaveValue(
       name_value
     );
-    await expect(homepage.locators.registration_form_email).toHaveValue(
+    await expect(authPage.locators.registration_form_email).toHaveValue(
       email_value
     );
 
-    await homepage.input_registration_form_details(
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
 
     // Assertions for registration form inputs
-    await expect(homepage.locators.radio_button_mr).toBeChecked();
-    await expect(homepage.locators.radio_button_mrs).not.toBeChecked();
-    await expect(homepage.locators.registration_form_password).toHaveValue(
+    await expect(authPage.locators.radio_button_mr).toBeChecked();
+    await expect(authPage.locators.radio_button_mrs).not.toBeChecked();
+    await expect(authPage.locators.registration_form_password).toHaveValue(
       random_password
     );
-    await expect(homepage.locators.day_dropdown).toHaveValue("15");
-    await expect(homepage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
-    await expect(homepage.locators.year_dropdown).toHaveValue("2000");
-    await expect(homepage.locators.newsletter_checkbox).toBeChecked();
-    await expect(homepage.locators.receive_offers_checkbox).not.toBeChecked();
-    await expect(homepage.locators.first_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.last_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.company_field).toHaveValue("Automation");
-    await expect(homepage.locators.address1_field).toHaveValue(address_data);
-    await expect(homepage.locators.address2_field).toHaveValue(address_data);
-    await expect(homepage.locators.country_dropdown).toHaveValue(
+    await expect(authPage.locators.day_dropdown).toHaveValue("15");
+    await expect(authPage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
+    await expect(authPage.locators.year_dropdown).toHaveValue("2000");
+    await expect(authPage.locators.newsletter_checkbox).toBeChecked();
+    await expect(authPage.locators.receive_offers_checkbox).not.toBeChecked();
+    await expect(authPage.locators.first_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.last_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.company_field).toHaveValue("Automation");
+    await expect(authPage.locators.address1_field).toHaveValue(address_data);
+    await expect(authPage.locators.address2_field).toHaveValue(address_data);
+    await expect(authPage.locators.country_dropdown).toHaveValue(
       "United States"
     );
-    await expect(homepage.locators.state_field).toHaveValue("California");
-    await expect(homepage.locators.city_field).toHaveValue("Los Angeles");
-    await expect(homepage.locators.zipcode_field).toHaveValue("90001");
-    await expect(homepage.locators.mobile_number_field).toHaveValue(
+    await expect(authPage.locators.state_field).toHaveValue("California");
+    await expect(authPage.locators.city_field).toHaveValue("Los Angeles");
+    await expect(authPage.locators.zipcode_field).toHaveValue("90001");
+    await expect(authPage.locators.mobile_number_field).toHaveValue(
       "1234567890"
     );
 
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
 
     // Log Email and password details
@@ -111,154 +119,152 @@ test.describe("Automation Exercise", () => {
     console.log("Password:", random_password);
 
     // Assertions for Account Created page
-    await expect(homepage.locators.account_created_heading).toBeVisible();
-    await expect(homepage.locators.continue_button).toBeVisible();
-    await homepage.continueToHomepage();
+    await expect(authPage.locators.account_created_heading).toBeVisible();
+    await expect(authPage.locators.continue_button).toBeVisible();
+    await authPage.continueToHomepage();
 
     // Assertions for Delete Account
-    await homepage.deleteAccount();
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await authPage.deleteAccount();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
-    console.log("Account deletion successful");
+    await authPage.continueToHomepage();
   });
 
   test("Test Case 2: Login User with correct email and password", async ({
     page,
   }) => {
     // Creating a new account for this testcase
-    await homepage.navigateToSignup();
-    await homepage.input_signup_details(name_value, email_value);
-    await homepage.input_registration_form_details(
+    await authPage.navigateToSignup();
+    await authPage.input_signup_details(name_value, email_value);
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
     // Log Email and password details
     console.log("Email:", email_value);
     console.log("Password:", random_password);
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
 
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
     // Logout
-    await homepage.locators.logout.click();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await homepage.input_login_details(email_value, random_password);
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
-    // await homepage.locators.logout.click();
-    await homepage.deleteAccount();
+    await authPage.locators.logout.click();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await authPage.input_login_details(email_value, random_password);
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
+    // await authPage.locators.logout.click();
+    await authPage.deleteAccount();
 
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
-    console.log("Account deletion successful");
+    await authPage.continueToHomepage();
   });
 
   test("Test Case 3: Login User with incorrect email and password", async ({
     page,
   }) => {
-    await homepage.navigateToSignup();
-    await homepage.input_signup_details(name_value, email_value);
-    await homepage.input_registration_form_details(
+    await authPage.navigateToSignup();
+    await authPage.input_signup_details(name_value, email_value);
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
     // Log Email and password details
     console.log("Email:", email_value);
     console.log("Password:", random_password);
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
 
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
     // Logout
-    await homepage.locators.logout.click();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await homepage.input_login_details(
+    await authPage.locators.logout.click();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await authPage.input_login_details(
       email_value,
       random_password + "incorrect"
     );
     await expect(
-      homepage.locators.incorrect_email_or_password_warning
+      authPage.locators.incorrect_email_or_password_warning
     ).toBeVisible();
-    await homepage.input_login_details(email_value, random_password);
+    await authPage.input_login_details(email_value, random_password);
 
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
-    // await homepage.locators.logout.click();
-    await homepage.deleteAccount();
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
+    // await authPage.locators.logout.click();
+    await authPage.deleteAccount();
 
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
     console.log("Account deletion successful");
   });
 
   test("Test Case 4: Logout User", async ({ page }) => {
     // Creating a new account for this testcase
-    await homepage.navigateToSignup();
-    await homepage.input_signup_details(name_value, email_value);
-    await homepage.input_registration_form_details(
+    await authPage.navigateToSignup();
+    await authPage.input_signup_details(name_value, email_value);
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
     // Log Email and password details
     console.log("Email:", email_value);
     console.log("Password:", random_password);
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
 
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
     // Logout
-    await homepage.locators.logout.click();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await homepage.input_login_details(email_value, random_password);
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
-    // await homepage.locators.logout.click();
-    await homepage.deleteAccount();
+    await authPage.locators.logout.click();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await authPage.input_login_details(email_value, random_password);
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
+    // await authPage.locators.logout.click();
+    await authPage.deleteAccount();
 
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
     console.log("Account deletion successful");
   });
 
   test("Test Case 5: Register User with existing email", async ({ page }) => {
     // Creating a new account for this testcase
-    await homepage.navigateToSignup();
-    await homepage.input_signup_details(name_value, email_value);
-    await homepage.input_registration_form_details(
+    await authPage.navigateToSignup();
+    await authPage.input_signup_details(name_value, email_value);
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
     // Log Email and password details
     console.log("Email:", email_value);
     console.log("Password:", random_password);
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
 
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
     // Logout
-    await homepage.locators.logout.click();
-    await homepage.input_signup_details(name_value, email_value);
+    await authPage.locators.logout.click();
+    await authPage.input_signup_details(name_value, email_value);
     await expect
-      .soft(homepage.locators.email_already_exists_warning)
+      .soft(authPage.locators.email_already_exists_warning)
       .toBeVisible();
-    await homepage.input_login_details(email_value, random_password);
-    await expect(page.getByText("Logged in as AutomationUser1")).toBeVisible();
-    // await homepage.locators.logout.click();
-    await homepage.deleteAccount();
+    await authPage.input_login_details(email_value, random_password);
+    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
+    // await authPage.locators.logout.click();
+    await authPage.deleteAccount();
 
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
     console.log("Account deletion successful");
   });
 
@@ -295,40 +301,34 @@ test.describe("Automation Exercise", () => {
   test("Test Case 8: Verify All Products and product detail page", async ({
     page,
   }) => {
-    await homepage.navigateToProducts();
-    await expect(homepage.locators.products_heading).toBeVisible();
-    await homepage.listAllProducts();
+    await productsPage.navigateToProducts();
+    await expect(productsPage.locators.products_heading).toBeVisible();
+    const all_products = await productsPage.listAllProducts();
     const product_name = "Men Tshirt";
-    await homepage.view_product(product_name);
+    await productsPage.view_product(product_name);
 
     // 9. Verify that detail is visible:
     // product name, category, price, availability, condition, brand
     await expect(
-      page.getByRole("heading", { name: product_name })
+      productsPage.locators.product_name_heading.getByRole("heading", {
+        name: product_name,
+      })
     ).toBeVisible();
-    await expect(homepage.locators.product_price_info).toBeVisible();
-    await expect(homepage.locators.product_availability_info).toBeVisible();
-    await expect(homepage.locators.product_condition_info).toBeVisible();
-    await expect(homepage.locators.product_brand_info).toBeVisible();
+    await expect(productsPage.locators.product_price_info).toBeVisible();
+    await expect(productsPage.locators.product_availability_info).toBeVisible();
+    await expect(productsPage.locators.product_condition_info).toBeVisible();
+    await expect(productsPage.locators.product_brand_info).toBeVisible();
   });
 
   test("Test Case 9: Search Product", async ({ page }) => {
     const product_name_value = "Tshirt";
-    await homepage.navigateToProducts();
-    await homepage.searchProducts(product_name_value);
-    const searched_products = await homepage.listAllProducts();
+    await productsPage.navigateToProducts();
+    await productsPage.searchProducts(product_name_value);
+    const searched_products = await productsPage.listAllProducts();
     // validate whether the product name is present in the searched products
     const isProductFound = searched_products.some((product) =>
       product.name.includes(product_name_value)
     );
-    // The some() method tests whether at least one element in the array passes the test implemented by the provided function.
-    // In this case, it checks if the product name includes the searched product name.
-
-    // const isProductFound = searched_products.every((product) =>
-    //   product.name.includes(product_name_value)
-    // );
-    // The every() method tests whether all elements in the array pass the test implemented by the provided function.
-    // In this case, it checks if the product name includes the searched product name.
     await expect(isProductFound).toBe(true);
     await page.waitForTimeout(2000);
   });
@@ -339,33 +339,32 @@ test.describe("Automation Exercise", () => {
     await expect(homepage.locators.subscription_email_field).toBeVisible();
     await expect(homepage.locators.subscription_button).toBeVisible();
 
-    await homepage.locators.subscription_email_field.fill(email_value);
+    await homepage.input_subscription_email(email_value);
     await expect(homepage.locators.subscription_email_field).toHaveValue(
       email_value
     );
-    await homepage.locators.subscription_button.click();
+    await homepage.click_subscription_button();
     await expect(homepage.locators.subscription_success_message).toBeVisible();
   });
 
   test("Test Case 11: Verify Subscription in Cart page", async ({ page }) => {
-    await homepage.navigateToCart();
+    await cartPage.navigateToCart();
     await expect(homepage.locators.subscription_heading).toBeVisible();
     await expect(homepage.locators.subscription_email_field).toBeVisible();
     await expect(homepage.locators.subscription_button).toBeVisible();
 
-    await homepage.locators.subscription_email_field.fill(email_value);
+    await homepage.input_subscription_email(email_value);
     await expect(homepage.locators.subscription_email_field).toHaveValue(
       email_value
     );
-    await homepage.locators.subscription_button.click();
+    await homepage.click_subscription_button();
     await expect(homepage.locators.subscription_success_message).toBeVisible();
   });
 
   test("Test Case 12: Add Products in Cart", async ({ page }) => {
     test.slow();
-    await homepage.navigateToProducts();
-    const all_products_data = await homepage.listAllProducts();
-    // console.log(all_products_data);
+    await productsPage.navigateToProducts();
+    const all_products_data = await productsPage.listAllProducts();
 
     // Adding First two Products to cart
     const first_product = all_products_data[0];
@@ -373,13 +372,13 @@ test.describe("Automation Exercise", () => {
     console.log(first_product);
     console.log(second_product);
 
-    await homepage.add_product_to_cart(first_product.name);
-    await page.getByRole("button", { name: "Continue Shopping" }).click();
+    await productsPage.add_product_to_cart(first_product.name);
+    await productsPage.locators.continue_shopping_button.click();
     await page.waitForLoadState("networkidle");
-    await homepage.add_product_to_cart(second_product.name);
-    await page.getByRole("link", { name: "View Cart" }).click();
+    await productsPage.add_product_to_cart(second_product.name);
+    await productsPage.locators.view_cart_button.click();
     await page.waitForLoadState("networkidle");
-    const cart_products_data = await homepage.listAllProductsInCart();
+    const cart_products_data = await cartPage.listAllProductsInCart();
     expect(cart_products_data.length).toBe(2);
 
     await page.waitForTimeout(2000);
@@ -395,21 +394,20 @@ test.describe("Automation Exercise", () => {
 
   test("Test Case 13: Verify Product quantity in Cart", async ({ page }) => {
     test.slow();
-    await homepage.navigateToProducts();
-    const all_products_data = await homepage.listAllProducts();
-    // console.log(all_products_data);
+    await productsPage.navigateToProducts();
+    const all_products_data = await productsPage.listAllProducts();
 
     // Adding First two Products to cart
     const first_product = all_products_data[0];
-    await homepage.view_product(first_product.name);
+    await productsPage.view_product(first_product.name);
     for (let index = 0; index < 3; index++) {
-      await page.locator("#quantity").press("ArrowUp");
+      await productsPage.locators.quantity_field.press("ArrowUp");
     }
-    await page.getByRole("button", { name: " Add to cart" }).click();
+    await productsPage.locators.add_to_cart_button.click();
 
-    await page.getByRole("link", { name: "View Cart" }).click();
+    await productsPage.locators.view_cart_button.click();
     await page.waitForLoadState("networkidle");
-    const cart_products_data = await homepage.listAllProductsInCart();
+    const cart_products_data = await cartPage.listAllProductsInCart();
     await page.waitForTimeout(2000);
     expect(cart_products_data.length).toBe(1);
     expect(cart_products_data[0].quantity).toBe("4");
@@ -419,67 +417,67 @@ test.describe("Automation Exercise", () => {
     page,
   }) => {
     test.slow();
-    await homepage.navigateToProducts();
-    const all_products_data = await homepage.listAllProducts();
+    await productsPage.navigateToProducts();
+    const all_products_data = await productsPage.listAllProducts();
     const first_product = all_products_data[0];
     console.log(first_product);
-    await homepage.add_product_to_cart(first_product.name);
-    await page.getByRole("link", { name: "View Cart" }).click();
+    await productsPage.add_product_to_cart(first_product.name);
+    await productsPage.locators.view_cart_button.click();
     await page.waitForLoadState("networkidle");
-    const cart_products_data = await homepage.listAllProductsInCart();
+    const cart_products_data = await cartPage.listAllProductsInCart();
     expect(cart_products_data.length).toBe(1);
     await page.waitForTimeout(2000);
-    await homepage.navigateToCart();
-    await homepage.locators.proceed_to_checkout_button.click();
-    await expect(homepage.locators.continue_on_cart_button).toBeVisible();
-    await homepage.locators.register_login_link.click();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await expect(homepage.locators.new_user_sign_up).toBeVisible();
-    await homepage.input_signup_details(name_value, email_value);
+    await cartPage.navigateToCart();
+    await checkoutPage.proceedToCheckout();
+    await expect(checkoutPage.locators.continue_on_cart_button).toBeVisible();
+    await checkoutPage.clickRegisterLoginLink();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await expect(authPage.locators.new_user_sign_up).toBeVisible();
+    await authPage.input_signup_details(name_value, email_value);
 
     // Assertions for Enter Account Information page
     await expect
-      .soft(homepage.locators.enter_account_info_heading)
+      .soft(authPage.locators.enter_account_info_heading)
       .toBeVisible();
-    await expect(homepage.locators.registration_form_name).toHaveValue(
+    await expect(authPage.locators.registration_form_name).toHaveValue(
       name_value
     );
-    await expect(homepage.locators.registration_form_email).toHaveValue(
+    await expect(authPage.locators.registration_form_email).toHaveValue(
       email_value
     );
 
-    await homepage.input_registration_form_details(
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
 
     // Assertions for registration form inputs
-    await expect(homepage.locators.radio_button_mr).toBeChecked();
-    await expect(homepage.locators.radio_button_mrs).not.toBeChecked();
-    await expect(homepage.locators.registration_form_password).toHaveValue(
+    await expect(authPage.locators.radio_button_mr).toBeChecked();
+    await expect(authPage.locators.radio_button_mrs).not.toBeChecked();
+    await expect(authPage.locators.registration_form_password).toHaveValue(
       random_password
     );
-    await expect(homepage.locators.day_dropdown).toHaveValue("15");
-    await expect(homepage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
-    await expect(homepage.locators.year_dropdown).toHaveValue("2000");
-    await expect(homepage.locators.newsletter_checkbox).toBeChecked();
-    await expect(homepage.locators.receive_offers_checkbox).not.toBeChecked();
-    await expect(homepage.locators.first_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.last_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.company_field).toHaveValue("Automation");
-    await expect(homepage.locators.address1_field).toHaveValue(address_data);
-    await expect(homepage.locators.address2_field).toHaveValue(address_data);
-    await expect(homepage.locators.country_dropdown).toHaveValue(
+    await expect(authPage.locators.day_dropdown).toHaveValue("15");
+    await expect(authPage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
+    await expect(authPage.locators.year_dropdown).toHaveValue("2000");
+    await expect(authPage.locators.newsletter_checkbox).toBeChecked();
+    await expect(authPage.locators.receive_offers_checkbox).not.toBeChecked();
+    await expect(authPage.locators.first_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.last_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.company_field).toHaveValue("Automation");
+    await expect(authPage.locators.address1_field).toHaveValue(address_data);
+    await expect(authPage.locators.address2_field).toHaveValue(address_data);
+    await expect(authPage.locators.country_dropdown).toHaveValue(
       "United States"
     );
-    await expect(homepage.locators.state_field).toHaveValue("California");
-    await expect(homepage.locators.city_field).toHaveValue("Los Angeles");
-    await expect(homepage.locators.zipcode_field).toHaveValue("90001");
-    await expect(homepage.locators.mobile_number_field).toHaveValue(
+    await expect(authPage.locators.state_field).toHaveValue("California");
+    await expect(authPage.locators.city_field).toHaveValue("Los Angeles");
+    await expect(authPage.locators.zipcode_field).toHaveValue("90001");
+    await expect(authPage.locators.mobile_number_field).toHaveValue(
       "1234567890"
     );
 
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
 
     // Log Email and password details
@@ -487,43 +485,47 @@ test.describe("Automation Exercise", () => {
     console.log("Password:", random_password);
 
     // Assertions for Account Created page
-    await expect(homepage.locators.account_created_heading).toBeVisible();
-    await expect(homepage.locators.continue_button).toBeVisible();
-    await homepage.continueToHomepage();
+    await expect(authPage.locators.account_created_heading).toBeVisible();
+    await expect(authPage.locators.continue_button).toBeVisible();
+    await authPage.continueToHomepage();
 
-    await homepage.navigateToCart();
-    await homepage.locators.proceed_to_checkout_button.click();
+    await cartPage.navigateToCart();
+    await checkoutPage.proceedToCheckout();
 
     // 14. Verify Address Details and Review Your Order
-    await expect(homepage.locators.delivery_address_heading).toBeVisible();
-    await expect(homepage.locators.billing_address_heading).toBeVisible();
+    await expect(checkoutPage.locators.delivery_address_heading).toBeVisible();
+    await expect(checkoutPage.locators.billing_address_heading).toBeVisible();
 
     // 15. Enter description in comment text area and click 'Place Order'
-    await homepage.locators.comment_text_area.fill(
+    await checkoutPage.fillCommentTextArea(
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     );
 
-    await homepage.locators.place_order_link.click();
+    await checkoutPage.clickPlaceOrderLink();
     // 16. Enter payment details: Name on Card, Card Number, CVC, Expiration date
-    await homepage.locators.name_on_card_field.fill(name_value);
-    await homepage.locators.card_number_field.fill("1234 5678 9123 4567");
-    await homepage.locators.cvc_field.fill("123");
-    await homepage.locators.expiration_month_field.fill("12");
-    await homepage.locators.expiration_year_field.fill("34");
+    await checkoutPage.fillPaymentDetails(
+      name_value,
+      "1234 5678 9123 4567",
+      "123",
+      "12",
+      "34"
+    );
 
     // 17. Click 'Pay and Confirm Order' button
-    await homepage.locators.pay_and_confirm_order_button.click();
+    await checkoutPage.clickPayAndConfirmOrderButton();
 
     // 18. Verify success message 'Your order has been placed successfully!'
 
-    await expect(homepage.locators.order_placed_success_message).toBeVisible();
+    await expect(
+      checkoutPage.locators.order_placed_success_message
+    ).toBeVisible();
 
     // Assertions for Delete Account
-    await homepage.deleteAccount();
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await authPage.deleteAccount();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
     console.log("Account deletion successful");
   });
 
@@ -532,54 +534,54 @@ test.describe("Automation Exercise", () => {
   }) => {
     test.slow();
 
-    await homepage.navigateToSignup();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await expect(homepage.locators.new_user_sign_up).toBeVisible();
-    await homepage.input_signup_details(name_value, email_value);
+    await authPage.navigateToSignup();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await expect(authPage.locators.new_user_sign_up).toBeVisible();
+    await authPage.input_signup_details(name_value, email_value);
 
     // Assertions for Enter Account Information page
     await expect
-      .soft(homepage.locators.enter_account_info_heading)
+      .soft(authPage.locators.enter_account_info_heading)
       .toBeVisible();
-    await expect(homepage.locators.registration_form_name).toHaveValue(
+    await expect(authPage.locators.registration_form_name).toHaveValue(
       name_value
     );
-    await expect(homepage.locators.registration_form_email).toHaveValue(
+    await expect(authPage.locators.registration_form_email).toHaveValue(
       email_value
     );
 
-    await homepage.input_registration_form_details(
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
 
     // Assertions for registration form inputs
-    await expect(homepage.locators.radio_button_mr).toBeChecked();
-    await expect(homepage.locators.radio_button_mrs).not.toBeChecked();
-    await expect(homepage.locators.registration_form_password).toHaveValue(
+    await expect(authPage.locators.radio_button_mr).toBeChecked();
+    await expect(authPage.locators.radio_button_mrs).not.toBeChecked();
+    await expect(authPage.locators.registration_form_password).toHaveValue(
       random_password
     );
-    await expect(homepage.locators.day_dropdown).toHaveValue("15");
-    await expect(homepage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
-    await expect(homepage.locators.year_dropdown).toHaveValue("2000");
-    await expect(homepage.locators.newsletter_checkbox).toBeChecked();
-    await expect(homepage.locators.receive_offers_checkbox).not.toBeChecked();
-    await expect(homepage.locators.first_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.last_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.company_field).toHaveValue("Automation");
-    await expect(homepage.locators.address1_field).toHaveValue(address_data);
-    await expect(homepage.locators.address2_field).toHaveValue(address_data);
-    await expect(homepage.locators.country_dropdown).toHaveValue(
+    await expect(authPage.locators.day_dropdown).toHaveValue("15");
+    await expect(authPage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
+    await expect(authPage.locators.year_dropdown).toHaveValue("2000");
+    await expect(authPage.locators.newsletter_checkbox).toBeChecked();
+    await expect(authPage.locators.receive_offers_checkbox).not.toBeChecked();
+    await expect(authPage.locators.first_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.last_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.company_field).toHaveValue("Automation");
+    await expect(authPage.locators.address1_field).toHaveValue(address_data);
+    await expect(authPage.locators.address2_field).toHaveValue(address_data);
+    await expect(authPage.locators.country_dropdown).toHaveValue(
       "United States"
     );
-    await expect(homepage.locators.state_field).toHaveValue("California");
-    await expect(homepage.locators.city_field).toHaveValue("Los Angeles");
-    await expect(homepage.locators.zipcode_field).toHaveValue("90001");
-    await expect(homepage.locators.mobile_number_field).toHaveValue(
+    await expect(authPage.locators.state_field).toHaveValue("California");
+    await expect(authPage.locators.city_field).toHaveValue("Los Angeles");
+    await expect(authPage.locators.zipcode_field).toHaveValue("90001");
+    await expect(authPage.locators.mobile_number_field).toHaveValue(
       "1234567890"
     );
 
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
 
     // Log Email and password details
@@ -587,108 +589,112 @@ test.describe("Automation Exercise", () => {
     console.log("Password:", random_password);
 
     // Assertions for Account Created page
-    await expect(homepage.locators.account_created_heading).toBeVisible();
-    await expect(homepage.locators.continue_button).toBeVisible();
-    await homepage.continueToHomepage();
+    await expect(authPage.locators.account_created_heading).toBeVisible();
+    await expect(authPage.locators.continue_button).toBeVisible();
+    await authPage.continueToHomepage();
 
-    await homepage.navigateToProducts();
-    const all_products_data = await homepage.listAllProducts();
+    await productsPage.navigateToProducts();
+    const all_products_data = await productsPage.listAllProducts();
     const first_product = all_products_data[0];
     console.log(first_product);
-    await homepage.add_product_to_cart(first_product.name);
-    await page.getByRole("link", { name: "View Cart" }).click();
+    await productsPage.add_product_to_cart(first_product.name);
+    await productsPage.locators.view_cart_button.click();
     await page.waitForLoadState("networkidle");
-    const cart_products_data = await homepage.listAllProductsInCart();
+    const cart_products_data = await cartPage.listAllProductsInCart();
     expect(cart_products_data.length).toBe(1);
     await page.waitForTimeout(2000);
-    await homepage.navigateToCart();
+    await cartPage.navigateToCart();
 
-    await homepage.locators.proceed_to_checkout_button.click();
+    await checkoutPage.proceedToCheckout();
 
     // 14. Verify Address Details and Review Your Order
-    await expect(homepage.locators.delivery_address_heading).toBeVisible();
-    await expect(homepage.locators.billing_address_heading).toBeVisible();
+    await expect(checkoutPage.locators.delivery_address_heading).toBeVisible();
+    await expect(checkoutPage.locators.billing_address_heading).toBeVisible();
 
     // 15. Enter description in comment text area and click 'Place Order'
-    await homepage.locators.comment_text_area.fill(
+    await checkoutPage.fillCommentTextArea(
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     );
 
-    await homepage.locators.place_order_link.click();
+    await checkoutPage.clickPlaceOrderLink();
     // 16. Enter payment details: Name on Card, Card Number, CVC, Expiration date
-    await homepage.locators.name_on_card_field.fill(name_value);
-    await homepage.locators.card_number_field.fill("1234 5678 9123 4567");
-    await homepage.locators.cvc_field.fill("123");
-    await homepage.locators.expiration_month_field.fill("12");
-    await homepage.locators.expiration_year_field.fill("34");
+    await checkoutPage.fillPaymentDetails(
+      name_value,
+      "1234 5678 9123 4567",
+      "123",
+      "12",
+      "34"
+    );
 
     // 17. Click 'Pay and Confirm Order' button
-    await homepage.locators.pay_and_confirm_order_button.click();
+    await checkoutPage.clickPayAndConfirmOrderButton();
 
     // 18. Verify success message 'Your order has been placed successfully!'
 
-    await expect(homepage.locators.order_placed_success_message).toBeVisible();
+    await expect(
+      checkoutPage.locators.order_placed_success_message
+    ).toBeVisible();
 
     // Assertions for Delete Account
-    await homepage.deleteAccount();
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
+    await authPage.deleteAccount();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
 
-    await homepage.continueToHomepage();
+    await authPage.continueToHomepage();
     console.log("Account deletion successful");
   });
 
   test("Test Case 16: Place Order: Login before Checkout", async ({ page }) => {
     // Create Account
     test.slow();
-    await homepage.navigateToSignup();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
-    await expect(homepage.locators.new_user_sign_up).toBeVisible();
-    await homepage.input_signup_details(name_value, email_value);
+    await authPage.navigateToSignup();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
+    await expect(authPage.locators.new_user_sign_up).toBeVisible();
+    await authPage.input_signup_details(name_value, email_value);
 
     // Assertions for Enter Account Information page
     await expect
-      .soft(homepage.locators.enter_account_info_heading)
+      .soft(authPage.locators.enter_account_info_heading)
       .toBeVisible();
-    await expect(homepage.locators.registration_form_name).toHaveValue(
+    await expect(authPage.locators.registration_form_name).toHaveValue(
       name_value
     );
-    await expect(homepage.locators.registration_form_email).toHaveValue(
+    await expect(authPage.locators.registration_form_email).toHaveValue(
       email_value
     );
 
-    await homepage.input_registration_form_details(
+    await authPage.input_registration_form_details(
       dateSelection,
       registrationFormData
     );
 
     // Assertions for registration form inputs
-    await expect(homepage.locators.radio_button_mr).toBeChecked();
-    await expect(homepage.locators.radio_button_mrs).not.toBeChecked();
-    await expect(homepage.locators.registration_form_password).toHaveValue(
+    await expect(authPage.locators.radio_button_mr).toBeChecked();
+    await expect(authPage.locators.radio_button_mrs).not.toBeChecked();
+    await expect(authPage.locators.registration_form_password).toHaveValue(
       random_password
     );
-    await expect(homepage.locators.day_dropdown).toHaveValue("15");
-    await expect(homepage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
-    await expect(homepage.locators.year_dropdown).toHaveValue("2000");
-    await expect(homepage.locators.newsletter_checkbox).toBeChecked();
-    await expect(homepage.locators.receive_offers_checkbox).not.toBeChecked();
-    await expect(homepage.locators.first_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.last_name_field).toHaveValue("Automation");
-    await expect(homepage.locators.company_field).toHaveValue("Automation");
-    await expect(homepage.locators.address1_field).toHaveValue(address_data);
-    await expect(homepage.locators.address2_field).toHaveValue(address_data);
-    await expect(homepage.locators.country_dropdown).toHaveValue(
+    await expect(authPage.locators.day_dropdown).toHaveValue("15");
+    await expect(authPage.locators.month_dropdown).toHaveValue("1"); // Month 'January' has value '1'
+    await expect(authPage.locators.year_dropdown).toHaveValue("2000");
+    await expect(authPage.locators.newsletter_checkbox).toBeChecked();
+    await expect(authPage.locators.receive_offers_checkbox).not.toBeChecked();
+    await expect(authPage.locators.first_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.last_name_field).toHaveValue("Automation");
+    await expect(authPage.locators.company_field).toHaveValue("Automation");
+    await expect(authPage.locators.address1_field).toHaveValue(address_data);
+    await expect(authPage.locators.address2_field).toHaveValue(address_data);
+    await expect(authPage.locators.country_dropdown).toHaveValue(
       "United States"
     );
-    await expect(homepage.locators.state_field).toHaveValue("California");
-    await expect(homepage.locators.city_field).toHaveValue("Los Angeles");
-    await expect(homepage.locators.zipcode_field).toHaveValue("90001");
-    await expect(homepage.locators.mobile_number_field).toHaveValue(
+    await expect(authPage.locators.state_field).toHaveValue("California");
+    await expect(authPage.locators.city_field).toHaveValue("Los Angeles");
+    await expect(authPage.locators.zipcode_field).toHaveValue("90001");
+    await expect(authPage.locators.mobile_number_field).toHaveValue(
       "1234567890"
     );
 
-    await homepage.submitRegistrationForm();
+    await authPage.submitRegistrationForm();
     console.log("Account creation successful");
 
     // Log Email and password details
@@ -696,56 +702,59 @@ test.describe("Automation Exercise", () => {
     console.log("Password:", random_password);
 
     // Assertions for Account Created page
-    await expect(homepage.locators.account_created_heading).toBeVisible();
-    await expect(homepage.locators.continue_button).toBeVisible();
-    await homepage.continueToHomepage();
+    await expect(authPage.locators.account_created_heading).toBeVisible();
+    await expect(authPage.locators.continue_button).toBeVisible();
+    await authPage.continueToHomepage();
 
     // Logout from account
-    await homepage.locators.logout.click();
-    await expect(homepage.locators.login_signup_button).toBeVisible();
+    await authPage.locators.logout.click();
+    await expect(authPage.locators.login_signup_button).toBeVisible();
 
     // Add product to cart
-    await homepage.navigateToProducts();
-    const all_products_data = await homepage.listAllProducts();
+    await productsPage.navigateToProducts();
+    const all_products_data = await productsPage.listAllProducts();
     const first_product = all_products_data[0];
-    await homepage.add_product_to_cart(first_product.name);
-    await page.getByRole("link", { name: "View Cart" }).click();
+    await productsPage.add_product_to_cart(first_product.name);
+    await productsPage.locators.view_cart_button.click();
     await page.waitForLoadState("networkidle");
-    const cart_products_data = await homepage.listAllProductsInCart();
+    const cart_products_data = await cartPage.listAllProductsInCart();
     expect(cart_products_data.length).toBe(1);
 
     // proceed to checkout
-    await homepage.navigateToCart();
-    await homepage.locators.proceed_to_checkout_button.click();
+    await cartPage.navigateToCart();
+    await checkoutPage.proceedToCheckout();
 
     // login to account
-    await homepage.locators.register_login_link.click();
-    await homepage.input_login_details(email_value, random_password);
+    await checkoutPage.clickRegisterLoginLink();
+    await authPage.input_login_details(email_value, random_password);
     // placeorder
-    await homepage.navigateToCart();
-    await homepage.locators.proceed_to_checkout_button.click();
-    await expect(homepage.locators.delivery_address_heading).toBeVisible();
-    await expect(homepage.locators.billing_address_heading).toBeVisible();
+    await cartPage.navigateToCart();
+    await checkoutPage.proceedToCheckout();
+    await expect(checkoutPage.locators.delivery_address_heading).toBeVisible();
+    await expect(checkoutPage.locators.billing_address_heading).toBeVisible();
 
-    await homepage.locators.comment_text_area.fill(
+    await checkoutPage.fillCommentTextArea(
       "Order placed after login before checkout."
     );
-    await homepage.locators.place_order_link.click();
+    await checkoutPage.clickPlaceOrderLink();
 
-    await homepage.locators.name_on_card_field.fill(name_value);
-    await homepage.locators.card_number_field.fill("1234 5678 9123 4567");
-    await homepage.locators.cvc_field.fill("123");
-    await homepage.locators.expiration_month_field.fill("12");
-    await homepage.locators.expiration_year_field.fill("34");
-    await homepage.locators.pay_and_confirm_order_button.click();
+    await checkoutPage.fillPaymentDetails(
+      name_value,
+      "1234 5678 9123 4567",
+      "123",
+      "12",
+      "34"
+    );
+    await checkoutPage.clickPayAndConfirmOrderButton();
 
-    await expect(homepage.locators.order_placed_success_message).toBeVisible();
+    await expect(
+      checkoutPage.locators.order_placed_success_message
+    ).toBeVisible();
 
     // Delete Account
-    await homepage.deleteAccount();
-    await expect(homepage.locators.account_deleted_heading).toBeVisible();
-    await expect(homepage.locators.account_deleted_info).toBeVisible();
-    await homepage.continueToHomepage();
-    //
+    await authPage.deleteAccount();
+    await expect(authPage.locators.account_deleted_heading).toBeVisible();
+    await expect(authPage.locators.account_deleted_info).toBeVisible();
+    await authPage.continueToHomepage();
   });
 });
