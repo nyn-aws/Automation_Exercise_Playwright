@@ -23,6 +23,11 @@ interface ProductLocators {
   women_category: Locator;
   men_category: Locator;
   kids_category: Locator;
+  women_dress_link: Locator;
+  men_tshirts_link: Locator;
+  women_dress_products_heading: Locator;
+  men_tshirts_products_heading: Locator;
+  brand_products_heading: (brandName: string) => Locator;
   polo_brand: Locator;
   h_and_m_brand: Locator;
   madame_brand: Locator;
@@ -40,6 +45,12 @@ interface ProductLocators {
   view_cart_button: Locator;
   quantity_field: Locator;
   add_to_cart_button: Locator;
+  write_your_review_heading: Locator;
+  review_name_field: Locator;
+  review_email_field: Locator;
+  review_text_field: Locator;
+  review_submit_button: Locator;
+  review_success_message: Locator;
 }
 
 /**
@@ -155,6 +166,20 @@ export class ProductsPage {
     await this.page.waitForLoadState("networkidle");
   }
 
+  async clickCategoryLink(categoryName: string) {
+    await this.page
+      .locator("div.left-sidebar")
+      .getByRole("link", { name: categoryName })
+      .click();
+  }
+
+  async addProductReview(name: string, email: string, reviewText: string) {
+    await this.locators.review_name_field.fill(name);
+    await this.locators.review_email_field.fill(email);
+    await this.locators.review_text_field.fill(reviewText);
+    await this.locators.review_submit_button.click();
+  }
+
   /**
    * @method initLocators
    * @description Initializes and returns a collection of locators for the ProductsPage.
@@ -177,6 +202,22 @@ export class ProductsPage {
       women_category: this.page.getByRole("link", { name: " Women" }),
       men_category: this.page.getByRole("link", { name: " Men" }),
       kids_category: this.page.getByRole("link", { name: " Kids" }),
+      women_dress_link: this.page
+        .locator("#Women")
+        .getByRole("link", { name: "Dress" }),
+      men_tshirts_link: this.page
+        .locator("#Men")
+        .getByRole("link", { name: "Tshirts" }),
+      women_dress_products_heading: this.page.getByRole("heading", {
+        name: "Women -  Dress Products",
+      }),
+      men_tshirts_products_heading: this.page.getByRole("heading", {
+        name: "Men - Tshirts Products",
+      }),
+      brand_products_heading: (brandName: string) =>
+        this.page.getByRole("heading", {
+          name: `Brand - ${brandName} Products`,
+        }),
 
       // product brands
       polo_brand: this.page.getByRole("link", { name: /Polo$/ }),
@@ -206,6 +247,21 @@ export class ProductsPage {
       add_to_cart_button: this.page.getByRole("button", {
         name: " Add to cart",
       }),
+
+      // Add Review
+      write_your_review_heading: this.page
+        .getByRole("list")
+        .filter({ hasText: "Write Your Review" }),
+      review_name_field: this.page.getByRole("textbox", { name: "Your Name" }),
+      review_email_field: this.page.getByRole("textbox", {
+        name: "Email Address",
+        exact: true,
+      }),
+      review_text_field: this.page.getByRole("textbox", {
+        name: "Add Review Here!",
+      }),
+      review_submit_button: this.page.getByRole("button", { name: "Submit" }),
+      review_success_message: this.page.getByText("Thank you for your review."),
     };
   }
 }

@@ -13,6 +13,7 @@ interface CartProduct {
 
 interface CartPageLocators {
   cart_link: Locator;
+  product_row_in_cart: (productName: string) => Locator;
 }
 
 /**
@@ -72,6 +73,8 @@ export class CartPage {
   private initLocators(): CartPageLocators {
     return {
       cart_link: this.page.getByRole("link", { name: "Cart" }),
+      product_row_in_cart: (productName: string) =>
+        this.page.locator("tbody tr").filter({ hasText: productName }),
     };
   }
 }

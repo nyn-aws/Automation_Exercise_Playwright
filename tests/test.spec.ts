@@ -69,227 +69,382 @@ test.describe("Automation Exercise", () => {
     );
   });
 
-  test("Test Case 6: Contact Us Form", async ({ page }) => {
-    // Verify Contact Us form fields and submit the form
-    await homepage.navigate_to_contact_us();
-    await expect(homepage.locators.contact_us_name_field).toBeVisible();
-    await expect(homepage.locators.contact_us_email_field).toBeVisible();
-    await expect(homepage.locators.contact_us_subject_field).toBeVisible();
-    await expect(homepage.locators.contact_us_message_field).toBeVisible();
-    await expect(homepage.locators.contact_us_submit_button).toBeVisible();
-    await homepage.input_contact_form(
-      name_value,
-      email_value,
-      CommonUtils.generateRandomString(10),
-      CommonUtils.generateRandomString(50)
-    );
-    await page.waitForTimeout(2000);
-    // Accept alert dialog after form submission
-    page.on("dialog", (dialog) => {
-      dialog.accept();
-    });
-    await homepage.submit_contact_form();
-    await expect(homepage.locators.contact_us_success_message).toBeVisible();
-  });
-
-  test("Test Case 7: Verify Test Cases Page", async ({ page }) => {
-    // Verify navigation to Test Cases page
-    await homepage.navigateToTestCases();
-    await expect(homepage.locators.test_cases_heading).toBeVisible();
-  });
-
-  test("Test Case 8: Verify All Products and product detail page", async ({
-    page,
-  }) => {
-    // Verify product listing and product detail page
-    await productsPage.navigateToProducts();
-    await expect(productsPage.locators.products_heading).toBeVisible();
-    const all_products = await productsPage.listAllProducts();
-    const product_name = "Men Tshirt";
-    await productsPage.view_product(product_name);
-    // Verify product details are visible
-    await expect(
-      productsPage.locators.product_name_heading.getByRole("heading", {
-        name: product_name,
-      })
-    ).toBeVisible();
-    await expect(productsPage.locators.product_price_info).toBeVisible();
-    await expect(productsPage.locators.product_availability_info).toBeVisible();
-    await expect(productsPage.locators.product_condition_info).toBeVisible();
-    await expect(productsPage.locators.product_brand_info).toBeVisible();
-  });
-
-  test("Test Case 9: Search Product", async ({ page }) => {
-    // Search for a product and verify results
-    const product_name_value = "Tshirt";
-    await productsPage.navigateToProducts();
-    await productsPage.searchProducts(product_name_value);
-    const searched_products = await productsPage.listAllProducts();
-    const isProductFound = searched_products.some((product) =>
-      product.name.includes(product_name_value)
-    );
-    await expect(isProductFound).toBe(true);
-    await page.waitForTimeout(2000);
-  });
-
-  test("Test Case 10: Verify Subscription in home page", async ({ page }) => {
-    // Verify subscription section on home page
-    await expect(homepage.locators.subscription_heading).toBeVisible();
-    await expect(homepage.locators.subscription_email_field).toBeVisible();
-    await expect(homepage.locators.subscription_button).toBeVisible();
-    await homepage.input_subscription_email(email_value);
-    await expect(homepage.locators.subscription_email_field).toHaveValue(
-      email_value
-    );
-    await homepage.click_subscription_button();
-    await expect(homepage.locators.subscription_success_message).toBeVisible();
-  });
-
-  test("Test Case 11: Verify Subscription in Cart page", async ({ page }) => {
-    // Verify subscription section on cart page
-    await cartPage.navigateToCart();
-    await expect(homepage.locators.subscription_heading).toBeVisible();
-    await expect(homepage.locators.subscription_email_field).toBeVisible();
-    await expect(homepage.locators.subscription_button).toBeVisible();
-    await homepage.input_subscription_email(email_value);
-    await expect(homepage.locators.subscription_email_field).toHaveValue(
-      email_value
-    );
-    await homepage.click_subscription_button();
-    await expect(homepage.locators.subscription_success_message).toBeVisible();
-  });
-
-  test("Test Case 12: Add Products in Cart", async ({ page }) => {
-    // Add two products to cart and verify
-    test.slow();
-    await productsPage.navigateToProducts();
-    const all_products_data = await productsPage.listAllProducts();
-    const first_product = all_products_data[0];
-    const second_product = all_products_data[1];
-    await productsPage.add_product_to_cart(first_product.name);
-    await productsPage.locators.continue_shopping_button.click();
-    await page.waitForLoadState("networkidle");
-    await productsPage.add_product_to_cart(second_product.name);
-    await productsPage.locators.view_cart_button.click();
-    await page.waitForLoadState("networkidle");
-    const cart_products_data = await cartPage.listAllProductsInCart();
-    expect(cart_products_data.length).toBe(2);
-    await page.waitForTimeout(2000);
-    // Validate both products are in cart
-    [first_product.name, second_product.name].forEach((name) => {
-      const containsProduct = cart_products_data.some((product) =>
-        product.name.includes(name)
+  test(
+    "Test Case 6: Contact Us Form",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the functionality of the Contact Us form, including field visibility, input, and successful submission with an alert dialog.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Verify Contact Us form fields and submit the form
+      await homepage.navigate_to_contact_us();
+      await expect(homepage.locators.contact_us_name_field).toBeVisible();
+      await expect(homepage.locators.contact_us_email_field).toBeVisible();
+      await expect(homepage.locators.contact_us_subject_field).toBeVisible();
+      await expect(homepage.locators.contact_us_message_field).toBeVisible();
+      await expect(homepage.locators.contact_us_submit_button).toBeVisible();
+      await homepage.input_contact_form(
+        name_value,
+        email_value,
+        CommonUtils.generateRandomString(10),
+        CommonUtils.generateRandomString(50)
       );
-      expect(containsProduct).toBe(true);
-    });
-  });
-
-  test("Test Case 13: Verify Product quantity in Cart", async ({ page }) => {
-    // Add product with increased quantity and verify in cart
-    test.slow();
-    await productsPage.navigateToProducts();
-    const all_products_data = await productsPage.listAllProducts();
-    const first_product = all_products_data[0];
-    await productsPage.view_product(first_product.name);
-    for (let index = 0; index < 3; index++) {
-      await productsPage.locators.quantity_field.press("ArrowUp");
+      await page.waitForTimeout(2000);
+      // Accept alert dialog after form submission
+      page.on("dialog", (dialog) => {
+        dialog.accept();
+      });
+      await homepage.submit_contact_form();
+      await expect(homepage.locators.contact_us_success_message).toBeVisible();
     }
-    await productsPage.locators.add_to_cart_button.click();
-    await productsPage.locators.view_cart_button.click();
-    await page.waitForLoadState("networkidle");
-    const cart_products_data = await cartPage.listAllProductsInCart();
-    await page.waitForTimeout(2000);
-    expect(cart_products_data.length).toBe(1);
-    expect(cart_products_data[0].quantity).toBe("4");
-  });
+  );
 
-  test("Test Case 17: Remove Products From Cart", async ({ page }) => {
-    await addProductToCartAndNavigateToCart(page, 0);
-    await removeProductFromCart(page, "Blue Top");
-  });
-
-  test("Test Case 18: View Category Products", async ({ page }) => {
-    await homepage.navigateToProducts();
-    await productsPage.locators.women_category.click();
-    await page.locator("#Women").getByRole("link", { name: "Dress" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Women -  Dress Products" })
-    ).toBeVisible();
-    // List all products and verify that at least one has "Dress" in its name
-    const all_dress_products = await productsPage.listAllProducts();
-    const hasDress = all_dress_products.some((product) =>
-      product.name.includes("Dress")
-    );
-    expect(hasDress).toBe(true);
-    await productsPage.locators.men_category.click();
-    await page.getByRole("link", { name: "Tshirts" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Men - Tshirts Products" })
-    ).toBeVisible();
-
-    // List all products and verify that at least one has "Tshirt" in its name
-    const all_shirt_products = await productsPage.listAllProducts();
-    const hasTshirt = all_shirt_products.some((product) =>
-      product.name.includes("Tshirt")
-    );
-    expect(hasTshirt).toBe(true);
-  });
-
-  test("Test Case 19: View & Cart Brand Products", async ({ page }) => {
-    await homepage.navigateToProducts();
-    const brandLocators = [
-      productsPage.locators.polo_brand,
-      productsPage.locators.h_and_m_brand,
-      productsPage.locators.madame_brand,
-      productsPage.locators.mast_and_harbour_brand,
-      productsPage.locators.babyhug_brand,
-      productsPage.locators.allen_solly_junior_brand,
-      productsPage.locators.kookie_kids_brand,
-      productsPage.locators.biba_brand,
-    ];
-    const brandNames = [
-      "POLO",
-      "H&M",
-      "Madame",
-      "Mast & Harbour",
-      "Babyhug",
-      "Allen Solly Junior",
-      "Kookie Kids",
-      "Biba",
-    ];
-    for (const locator of brandLocators) {
-      await expect(locator).toBeVisible();
+  test(
+    "Test Case 7: Verify Test Cases Page",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies successful navigation to the Test Cases page and the visibility of its heading.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Verify navigation to Test Cases page
+      await homepage.navigateToTestCases();
+      await expect(homepage.locators.test_cases_heading).toBeVisible();
     }
+  );
 
-    for (let i = 0; i < brandLocators.length; i++) {
-      await brandLocators[i].click();
+  test(
+    "Test Case 8: Verify All Products and product detail page",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the listing of all products, navigation to a product's detail page, and the visibility of product information.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Verify product listing and product detail page
+      await productsPage.navigateToProducts();
+      await expect(productsPage.locators.products_heading).toBeVisible();
+      const all_products = await productsPage.listAllProducts();
+      const product_name = "Men Tshirt";
+      await productsPage.view_product(product_name);
+      // Verify product details are visible
       await expect(
-        page.getByRole("heading", { name: `Brand - ${brandNames[i]} Products` })
+        productsPage.locators.product_name_heading.getByRole("heading", {
+          name: product_name,
+        })
       ).toBeVisible();
-      // await page.goBack();
+      await expect(productsPage.locators.product_price_info).toBeVisible();
+      await expect(
+        productsPage.locators.product_availability_info
+      ).toBeVisible();
+      await expect(productsPage.locators.product_condition_info).toBeVisible();
+      await expect(productsPage.locators.product_brand_info).toBeVisible();
     }
-  });
+  );
 
-  test("Test Case 21: Add review on product", async ({ page }) => {
-    const product_name = "Blue Top";
-    await homepage.navigateToProducts();
-    await productsPage.view_product(product_name);
-    await expect(
-      page.getByRole("list").filter({ hasText: "Write Your Review" })
-    ).toBeVisible();
-    // review form
-    await page.getByRole("textbox", { name: "Your Name" }).fill(name_value);
-    await page
-      .getByRole("textbox", { name: "Email Address", exact: true })
-      .fill(email_value);
-    await page
-      .getByRole("textbox", { name: "Add Review Here!" })
-      .fill(
+  test(
+    "Test Case 9: Search Product",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the product search functionality and confirms that the search results contain the expected product.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Search for a product and verify results
+      const product_name_value = "Tshirt";
+      await productsPage.navigateToProducts();
+      await productsPage.searchProducts(product_name_value);
+      const searched_products = await productsPage.listAllProducts();
+      const isProductFound = searched_products.some((product) =>
+        product.name.includes(product_name_value)
+      );
+      await expect(isProductFound).toBe(true);
+      await page.waitForTimeout(2000);
+    }
+  );
+
+  test(
+    "Test Case 10: Verify Subscription in home page",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the subscription feature on the home page, including email input and successful subscription message.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Verify subscription section on home page
+      await expect(homepage.locators.subscription_heading).toBeVisible();
+      await expect(homepage.locators.subscription_email_field).toBeVisible();
+      await expect(homepage.locators.subscription_button).toBeVisible();
+      await homepage.input_subscription_email(email_value);
+      await expect(homepage.locators.subscription_email_field).toHaveValue(
+        email_value
+      );
+      await homepage.click_subscription_button();
+      await expect(
+        homepage.locators.subscription_success_message
+      ).toBeVisible();
+    }
+  );
+
+  test(
+    "Test Case 11: Verify Subscription in Cart page",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the subscription feature on the cart page, including email input and successful subscription message.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Verify subscription section on cart page
+      await cartPage.navigateToCart();
+      await expect(homepage.locators.subscription_heading).toBeVisible();
+      await expect(homepage.locators.subscription_email_field).toBeVisible();
+      await expect(homepage.locators.subscription_button).toBeVisible();
+      await homepage.input_subscription_email(email_value);
+      await expect(homepage.locators.subscription_email_field).toHaveValue(
+        email_value
+      );
+      await homepage.click_subscription_button();
+      await expect(
+        homepage.locators.subscription_success_message
+      ).toBeVisible();
+    }
+  );
+
+  test(
+    "Test Case 12: Add Products in Cart",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the functionality of adding two products to the cart and confirms their presence in the cart.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Add two products to cart and verify
+      test.slow();
+      await productsPage.navigateToProducts();
+      const all_products_data = await productsPage.listAllProducts();
+      const first_product = all_products_data[0];
+      const second_product = all_products_data[1];
+      await productsPage.add_product_to_cart(first_product.name);
+      await productsPage.locators.continue_shopping_button.click();
+      await page.waitForLoadState("networkidle");
+      await productsPage.add_product_to_cart(second_product.name);
+      await productsPage.locators.view_cart_button.click();
+      await page.waitForLoadState("networkidle");
+      const cart_products_data = await cartPage.listAllProductsInCart();
+      expect(cart_products_data.length).toBe(2);
+      await page.waitForTimeout(2000);
+      // Validate both products are in cart
+      [first_product.name, second_product.name].forEach((name) => {
+        const containsProduct = cart_products_data.some((product) =>
+          product.name.includes(name)
+        );
+        expect(containsProduct).toBe(true);
+      });
+    }
+  );
+
+  test(
+    "Test Case 13: Verify Product quantity in Cart",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies that a product can be added to the cart with an increased quantity and that the quantity is correctly reflected in the cart.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Add product with increased quantity and verify in cart
+      test.slow();
+      await productsPage.navigateToProducts();
+      const all_products_data = await productsPage.listAllProducts();
+      const first_product = all_products_data[0];
+      await productsPage.view_product(first_product.name);
+      for (let index = 0; index < 3; index++) {
+        await productsPage.locators.quantity_field.press("ArrowUp");
+      }
+      await productsPage.locators.add_to_cart_button.click();
+      await productsPage.locators.view_cart_button.click();
+      await page.waitForLoadState("networkidle");
+      const cart_products_data = await cartPage.listAllProductsInCart();
+      await page.waitForTimeout(2000);
+      expect(cart_products_data.length).toBe(1);
+      expect(cart_products_data[0].quantity).toBe("4");
+    }
+  );
+
+  test(
+    "Test Case 17: Remove Products From Cart",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the functionality of removing a product from the cart and confirms its absence.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      await addProductToCartAndNavigateToCart(page, 0);
+      await removeProductFromCart(page, "Blue Top");
+    }
+  );
+
+  test(
+    "Test Case 18: View Category Products",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the ability to view products by category (Women - Dress, Men - Tshirts) and confirms that products from the selected categories are displayed.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      await homepage.navigateToProducts();
+      await productsPage.locators.women_category.click();
+      await productsPage.locators.women_dress_link.click();
+      await expect(
+        productsPage.locators.women_dress_products_heading
+      ).toBeVisible();
+      // List all products and verify that at least one has "Dress" in its name
+      const all_dress_products = await productsPage.listAllProducts();
+      const hasDress = all_dress_products.some((product) =>
+        product.name.includes("Dress")
+      );
+      expect(hasDress).toBe(true);
+      await productsPage.locators.men_category.click();
+      await productsPage.locators.men_tshirts_link.click();
+      await expect(
+        productsPage.locators.men_tshirts_products_heading
+      ).toBeVisible();
+
+      // List all products and verify that at least one has "Tshirt" in its name
+      const all_shirt_products = await productsPage.listAllProducts();
+      const hasTshirt = all_shirt_products.some((product) =>
+        product.name.includes("Tshirt")
+      );
+      expect(hasTshirt).toBe(true);
+    }
+  );
+
+  test(
+    "Test Case 19: View & Cart Brand Products",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the ability to view products by brand and confirms the visibility of brand-specific product headings.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      await homepage.navigateToProducts();
+      const brandLocators = [
+        productsPage.locators.polo_brand,
+        productsPage.locators.h_and_m_brand,
+        productsPage.locators.madame_brand,
+        productsPage.locators.mast_and_harbour_brand,
+        productsPage.locators.babyhug_brand,
+        productsPage.locators.allen_solly_junior_brand,
+        productsPage.locators.kookie_kids_brand,
+        productsPage.locators.biba_brand,
+      ];
+      const brandNames = [
+        "POLO",
+        "H&M",
+        "Madame",
+        "Mast & Harbour",
+        "Babyhug",
+        "Allen Solly Junior",
+        "Kookie Kids",
+        "Biba",
+      ];
+      for (const locator of brandLocators) {
+        await expect(locator).toBeVisible();
+      }
+
+      for (let i = 0; i < brandLocators.length; i++) {
+        await brandLocators[i].click();
+        await expect(
+          productsPage.locators.brand_products_heading(brandNames[i])
+        ).toBeVisible();
+        // await page.goBack();
+      }
+    }
+  );
+
+  test(
+    "Test Case 21: Add review on product",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the functionality of adding a review to a product, including inputting name, email, and review text, and confirming the success message.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      const product_name = "Blue Top";
+      await homepage.navigateToProducts();
+      await productsPage.view_product(product_name);
+      await expect(
+        productsPage.locators.write_your_review_heading
+      ).toBeVisible();
+      // review form
+      await productsPage.addProductReview(
+        name_value,
+        email_value,
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
       );
-    await page.getByRole("button", { name: "Submit" }).click();
-    await expect(page.getByText("Thank you for your review.")).toBeVisible();
-  });
+      await expect(productsPage.locators.review_success_message).toBeVisible();
+    }
+  );
 });
 
 // Test suite: Tests that require account deletion after each test
@@ -327,197 +482,331 @@ test.describe("Tests with Account Deletion", () => {
     await authPage.continueToHomepage();
   });
 
-  test("Test Case 1: Register User", async ({ page }) => {
-    // Register a new user and verify account creation
-    test.slow();
-    await registerUser(page);
-    await expect(authPage.locators.account_created_heading).toBeVisible();
-    await expect(authPage.locators.continue_button).toBeVisible();
-    await authPage.continueToHomepage();
-  });
-
-  test("Test Case 2: Login User with correct email and password", async ({
-    page,
-  }) => {
-    // Register and login with correct credentials
-    await registerUser(page);
-    await authPage.continueToHomepage();
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-    await authPage.locators.logout.click();
-    await expect(authPage.locators.login_signup_button).toBeVisible();
-    await authPage.input_login_details(email_value, random_password);
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-  });
-
-  test("Test Case 3: Login User with incorrect email and password", async ({
-    page,
-  }) => {
-    // Register and attempt login with incorrect credentials, then correct
-    await registerUser(page);
-    await authPage.continueToHomepage();
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-    await authPage.locators.logout.click();
-    await expect(authPage.locators.login_signup_button).toBeVisible();
-    await authPage.input_login_details(
-      email_value,
-      random_password + "incorrect"
-    );
-    await expect(
-      authPage.locators.incorrect_email_or_password_warning
-    ).toBeVisible();
-    await authPage.input_login_details(email_value, random_password);
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-  });
-
-  test("Test Case 4: Logout User", async ({ page }) => {
-    // Register, login, and logout user
-    await registerUser(page);
-    await authPage.continueToHomepage();
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-    await authPage.locators.logout.click();
-    await expect(authPage.locators.login_signup_button).toBeVisible();
-    await authPage.input_login_details(email_value, random_password);
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-  });
-
-  test("Test Case 5: Register User with existing email", async ({ page }) => {
-    // Attempt to register with an existing email and verify warning
-    await registerUser(page);
-    await authPage.continueToHomepage();
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-    await authPage.locators.logout.click();
-    await authPage.input_signup_details(name_value, email_value);
-    await expect
-      .soft(authPage.locators.email_already_exists_warning)
-      .toBeVisible();
-    await authPage.input_login_details(email_value, random_password);
-    await expect(authPage.locators.logged_in_as_user(name_value)).toBeVisible();
-  });
-
-  test("Test Case 14: Place Order: Register while Checkout", async ({
-    page,
-  }) => {
-    // Register during checkout and complete order
-    test.slow();
-    await addProductToCartAndNavigateToCart(page, 0);
-    await cartPage.navigateToCart();
-    await checkoutPage.proceedToCheckout();
-    await expect(checkoutPage.locators.continue_on_cart_button).toBeVisible();
-    await checkoutPage.clickRegisterLoginLink();
-    await registerUser(page);
-    await expect(authPage.locators.account_created_heading).toBeVisible();
-    await expect(authPage.locators.continue_button).toBeVisible();
-    await authPage.continueToHomepage();
-
-    await CheckoutCart_and_Complete_Payment(page);
-  });
-
-  test("Test Case 15: Place Order: Register before Checkout", async ({
-    page,
-  }) => {
-    // Register before checkout and complete order
-    test.slow();
-    await registerUser(page);
-    await expect(authPage.locators.account_created_heading).toBeVisible();
-    await expect(authPage.locators.continue_button).toBeVisible();
-    await authPage.continueToHomepage();
-    await addProductToCartAndNavigateToCart(page, 0);
-    await CheckoutCart_and_Complete_Payment(page);
-  });
-
-  test("Test Case 16: Place Order: Login before Checkout", async ({ page }) => {
-    // Register, logout, login before checkout, and complete order
-    test.slow();
-    await registerUser(page);
-    await expect(authPage.locators.account_created_heading).toBeVisible();
-    await expect(authPage.locators.continue_button).toBeVisible();
-    await authPage.continueToHomepage();
-    await authPage.locators.logout.click();
-    await expect(authPage.locators.login_signup_button).toBeVisible();
-    await addProductToCartAndNavigateToCart(page, 0);
-    await cartPage.navigateToCart();
-    await checkoutPage.proceedToCheckout();
-    await checkoutPage.clickRegisterLoginLink();
-    await authPage.input_login_details(email_value, random_password);
-    await CheckoutCart_and_Complete_Payment(page);
-  });
-
-  test("Test Case 20: Search Products and Verify Cart After Login", async ({
-    page,
-  }) => {
-    const search_keyword = "Tshirt";
-    await homepage.navigateToProducts();
-    await productsPage.searchProducts(search_keyword);
-    // await page.waitForLoadState("networkidle");
-    const all_searched_results = await productsPage.listAllProducts();
-    console.log(all_searched_results);
-
-    const hasTshirt = all_searched_results.some((e) =>
-      e.name.includes(search_keyword)
-    );
-    expect.soft(hasTshirt).toBe(true);
-
-    for (const products of all_searched_results) {
-      await productsPage.add_product_to_cart(products.name);
-      await productsPage.locators.continue_shopping_button.click();
+  test(
+    "Test Case 1: Register User",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the user registration process and account creation.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register a new user and verify account creation
+      test.slow();
+      await registerUser(page);
+      await expect(authPage.locators.account_created_heading).toBeVisible();
+      await expect(authPage.locators.continue_button).toBeVisible();
+      await authPage.continueToHomepage();
     }
-    await cartPage.navigateToCart();
-    const all_products_in_cart = await cartPage.listAllProductsInCart();
-    expect(all_searched_results.length).toBe(all_products_in_cart.length);
+  );
 
-    // Had to use this as the test case was failing due to some extra spaces
-    function normalizeName(name: string): string {
-      return name
-        .replace(/\s+/g, " ") // collapse multiple spaces into one
-        .trim() // remove leading/trailing spaces
-        .toLowerCase(); // case-insensitive compare
+  test(
+    "Test Case 2: Login User with correct email and password",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies user login with correct credentials after registration and subsequent logout and re-login.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register and login with correct credentials
+      await registerUser(page);
+      await authPage.continueToHomepage();
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+      await authPage.locators.logout.click();
+      await expect(authPage.locators.login_signup_button).toBeVisible();
+      await authPage.input_login_details(email_value, random_password);
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
     }
+  );
 
-    for (const searchedProduct of all_searched_results) {
-      const found = all_products_in_cart.some((cartProduct) =>
-        normalizeName(cartProduct.name).includes(
-          normalizeName(searchedProduct.name)
-        )
+  test(
+    "Test Case 3: Login User with incorrect email and password",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the handling of incorrect login credentials and successful login after providing correct credentials.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register and attempt login with incorrect credentials, then correct
+      await registerUser(page);
+      await authPage.continueToHomepage();
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+      await authPage.locators.logout.click();
+      await expect(authPage.locators.login_signup_button).toBeVisible();
+      await authPage.input_login_details(
+        email_value,
+        random_password + "incorrect"
       );
-
-      // console.log(`Searched: ${searchedProduct.name}, Found: ${found}`);
-      expect.soft(found).toBe(true);
+      await expect(
+        authPage.locators.incorrect_email_or_password_warning
+      ).toBeVisible();
+      await authPage.input_login_details(email_value, random_password);
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
     }
+  );
 
-    await registerUser(page);
-    await cartPage.navigateToCart();
+  test(
+    "Test Case 4: Logout User",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the user logout functionality and subsequent successful login.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register, login, and logout user
+      await registerUser(page);
+      await authPage.continueToHomepage();
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+      await authPage.locators.logout.click();
+      await expect(authPage.locators.login_signup_button).toBeVisible();
+      await authPage.input_login_details(email_value, random_password);
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+    }
+  );
 
-    for (const searchedProduct of all_searched_results) {
-      const found = all_products_in_cart.some((cartProduct) =>
-        normalizeName(cartProduct.name).includes(
-          normalizeName(searchedProduct.name)
-        )
+  test(
+    "Test Case 5: Register User with existing email",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the system's response when attempting to register with an already existing email.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Attempt to register with an existing email and verify warning
+      await registerUser(page);
+      await authPage.continueToHomepage();
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+      await authPage.locators.logout.click();
+      await authPage.input_signup_details(name_value, email_value);
+      await expect
+        .soft(authPage.locators.email_already_exists_warning)
+        .toBeVisible();
+      await authPage.input_login_details(email_value, random_password);
+      await expect(
+        authPage.locators.logged_in_as_user(name_value)
+      ).toBeVisible();
+    }
+  );
+
+  test(
+    "Test Case 14: Place Order: Register while Checkout",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the process of user registration during checkout and successful order placement.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register during checkout and complete order
+      test.slow();
+      await addProductToCartAndNavigateToCart(page, 0);
+      await cartPage.navigateToCart();
+      await checkoutPage.proceedToCheckout();
+      await expect(checkoutPage.locators.continue_on_cart_button).toBeVisible();
+      await checkoutPage.clickRegisterLoginLink();
+      await registerUser(page);
+      await expect(authPage.locators.account_created_heading).toBeVisible();
+      await expect(authPage.locators.continue_button).toBeVisible();
+      await authPage.continueToHomepage();
+
+      await CheckoutCart_and_Complete_Payment(page);
+    }
+  );
+
+  test(
+    "Test Case 15: Place Order: Register before Checkout",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the process of user registration before checkout and successful order placement.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register before checkout and complete order
+      test.slow();
+      await registerUser(page);
+      await expect(authPage.locators.account_created_heading).toBeVisible();
+      await expect(authPage.locators.continue_button).toBeVisible();
+      await authPage.continueToHomepage();
+      await addProductToCartAndNavigateToCart(page, 0);
+      await CheckoutCart_and_Complete_Payment(page);
+    }
+  );
+
+  test(
+    "Test Case 16: Place Order: Login before Checkout",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the process of user login before checkout and successful order placement.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      // Register, logout, login before checkout, and complete order
+      test.slow();
+      await registerUser(page);
+      await expect(authPage.locators.account_created_heading).toBeVisible();
+      await expect(authPage.locators.continue_button).toBeVisible();
+      await authPage.continueToHomepage();
+      await authPage.locators.logout.click();
+      await expect(authPage.locators.login_signup_button).toBeVisible();
+      await addProductToCartAndNavigateToCart(page, 0);
+      await cartPage.navigateToCart();
+      await checkoutPage.proceedToCheckout();
+      await checkoutPage.clickRegisterLoginLink();
+      await authPage.input_login_details(email_value, random_password);
+      await CheckoutCart_and_Complete_Payment(page);
+    }
+  );
+
+  test(
+    "Test Case 20: Search Products and Verify Cart After Login",
+    {
+      tag: "@regression",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies product search, adding searched products to the cart, and the persistence of cart items after user login.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      const search_keyword = "Tshirt";
+      await homepage.navigateToProducts();
+      await productsPage.searchProducts(search_keyword);
+      // await page.waitForLoadState("networkidle");
+      const all_searched_results = await productsPage.listAllProducts();
+      console.log(all_searched_results);
+
+      const hasTshirt = all_searched_results.some((e) =>
+        e.name.includes(search_keyword)
       );
+      expect.soft(hasTshirt).toBe(true);
 
-      // console.log(`Searched: ${searchedProduct.name}, Found: ${found}`);
-      expect.soft(found).toBe(true);
+      for (const products of all_searched_results) {
+        await productsPage.add_product_to_cart(products.name);
+        await productsPage.locators.continue_shopping_button.click();
+      }
+      await cartPage.navigateToCart();
+      const all_products_in_cart = await cartPage.listAllProductsInCart();
+      expect(all_searched_results.length).toBe(all_products_in_cart.length);
+
+      // Had to use this as the test case was failing due to some extra spaces
+      function normalizeName(name: string): string {
+        return name
+          .replace(/\s+/g, " ") // collapse multiple spaces into one
+          .trim() // remove leading/trailing spaces
+          .toLowerCase(); // case-insensitive compare
+      }
+
+      for (const searchedProduct of all_searched_results) {
+        const found = all_products_in_cart.some((cartProduct) =>
+          normalizeName(cartProduct.name).includes(
+            normalizeName(searchedProduct.name)
+          )
+        );
+
+        // console.log(`Searched: ${searchedProduct.name}, Found: ${found}`);
+        expect.soft(found).toBe(true);
+      }
+
+      await registerUser(page);
+      await cartPage.navigateToCart();
+
+      for (const searchedProduct of all_searched_results) {
+        const found = all_products_in_cart.some((cartProduct) =>
+          normalizeName(cartProduct.name).includes(
+            normalizeName(searchedProduct.name)
+          )
+        );
+
+        // console.log(`Searched: ${searchedProduct.name}, Found: ${found}`);
+        expect.soft(found).toBe(true);
+      }
     }
-  });
+  );
 
-  test("Test Case 24: Download Invoice after purchase order", async ({
-    page,
-  }) => {
-    await registerUser(page);
-    await homepage.navigateToProducts();
-    await addProductToCartAndNavigateToCart(page, 0);
-    await CheckoutCart_and_Complete_Payment(page);
-    await page.waitForLoadState("networkidle");
+  test(
+    "Test Case 22: Download Invoice after purchase order",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the functionality to download the invoice after a successful purchase order.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      await registerUser(page);
+      await homepage.navigateToProducts();
+      await addProductToCartAndNavigateToCart(page, 0);
+      await CheckoutCart_and_Complete_Payment(page);
+      await page.waitForLoadState("networkidle");
 
-    const [download] = await Promise.all([
-      page.waitForEvent("download"),
-      page.getByRole("link", { name: "Download Invoice" }).click(),
-    ]);
-    // Download and save in present directory
-    await download.saveAs("tests/test_data/" + download.suggestedFilename());
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.getByRole("link", { name: "Download Invoice" }).click(),
+      ]);
+      // Download and save in present directory
+      await download.saveAs("tests/test_data/" + download.suggestedFilename());
 
-    // use fs to delete the file directory
-    fs.rmSync("tests/test_data/", { recursive: true, force: true });
-  });
+      // use fs to delete the file directory
+      fs.rmSync("tests/test_data/", { recursive: true, force: true });
+    }
+  );
 });
 
 // Helper function: Assert registration form input values
@@ -586,14 +875,13 @@ async function addProductToCartAndNavigateToCart(
 
 async function removeProductFromCart(page: Page, product_name: string) {
   await cartPage.navigateToCart();
-  await page
-    .locator("tbody tr")
-    .filter({ hasText: product_name })
+  await cartPage.locators
+    .product_row_in_cart(product_name)
     .locator(".cart_delete a")
     .click();
   await page.waitForTimeout(2000);
   expect
-    .soft(page.locator("tbody tr").filter({ hasText: product_name }))
+    .soft(cartPage.locators.product_row_in_cart(product_name))
     .not.toBeVisible();
 }
 
