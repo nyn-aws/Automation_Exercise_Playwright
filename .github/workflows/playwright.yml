@@ -10,7 +10,7 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.54.2-jammy
+    container: mcr.microsoft.com/playwright:v1.55.0-jammy
 
     steps:
       - name: Checkout repository
