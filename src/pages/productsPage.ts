@@ -174,9 +174,9 @@ export class ProductsPage {
       search_product_button: this.page.getByRole("button", { name: "" }),
 
       // products category
-      women_category: this.page.getByRole("heading", { name: " Women" }),
-      men_category: this.page.getByRole("heading", { name: " Men" }),
-      kids_category: this.page.getByRole("heading", { name: " Kids" }),
+      women_category: this.page.getByRole("link", { name: " Women" }),
+      men_category: this.page.getByRole("link", { name: " Men" }),
+      kids_category: this.page.getByRole("link", { name: " Kids" }),
 
       // product brands
       polo_brand: this.page.getByRole("link", { name: /Polo$/ }),
